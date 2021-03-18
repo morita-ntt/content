@@ -215,6 +215,13 @@ def clean_non_existing_packs(index_folder_path: str, private_packs: list, storag
     invalid_packs_names = {(entry.name, entry.path) for entry in os.scandir(index_folder_path) if
                            entry.name not in valid_packs_names and entry.is_dir()}
 
+    for entry in os.scandir(index_folder_path):
+        logging.info(entry.name)
+        logging.info(entry.path)
+    logging.info(private_packs)
+    logging.info(valid_packs_names)
+
+
     if invalid_packs_names:
         try:
             logging.warning(f"Detected {len(invalid_packs_names)} non existing pack inside index, starting cleanup.")
