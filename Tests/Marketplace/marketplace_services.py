@@ -77,6 +77,7 @@ class GCPConfig(object):
     INDEX_NAME = "index"  # main index folder name
     CORE_PACK_FILE_NAME = "corepacks.json"  # core packs file name
     DOWNLOADS_TABLE = "oproxy-dev.shared_views.top_packs"  # packs downloads statistics table
+    TOP_PACKS_14_DAYS_TABLE = 'oproxy-dev.shared_views.top_packs_14_days'
     BIG_QUERY_MAX_RESULTS = 2000  # big query max row results
 
     with open(os.path.join(os.path.dirname(__file__), 'core_packs_list.json'), 'r') as core_packs_list_file:
@@ -2434,7 +2435,7 @@ def get_trending_packs(bq_client) -> list:
     Returns:
         A list with 20 pack names that has the highest download rate.
     """
-    query = f"SELECT pack_name FROM `{GCPConfig.DOWNLOADS_TABLE}` ORDER BY num_count DESC LIMIT 20"
+    query = f"SELECT pack_name FROM `{GCPConfig.TOP_PACKS_14_DAYS_TABLE}` ORDER BY num_count DESC LIMIT 20"
     packs_with_highest_download_count_dataframe = bq_client.query(query).result().to_dataframe()
     packs_with_highest_download_count = [pack_array[0] for pack_array in
                                          packs_with_highest_download_count_dataframe.to_numpy()]
