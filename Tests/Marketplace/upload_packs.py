@@ -15,7 +15,7 @@ from Tests.Marketplace.marketplace_services import init_storage_client, init_big
     GCPConfig, PACKS_FULL_PATH, IGNORED_FILES, PACKS_FOLDER, IGNORED_PATHS, Metadata, CONTENT_ROOT_PATH, \
     LANDING_PAGE_SECTIONS_PATH, get_packs_statistics_dataframe, BucketUploadFlow, load_json, get_content_git_client, \
     get_recent_commits_data, store_successful_and_failed_packs_in_ci_artifacts, \
-    update_landing_page_sections_trending_packs
+    get_trending_packs
 from demisto_sdk.commands.common.tools import run_command, str2bool
 
 from Tests.scripts.utils.log_util import install_logging
@@ -932,7 +932,7 @@ def main():
     bq_client = init_bigquery_client(service_account)
 
     landing_page_sections = load_json(LANDING_PAGE_SECTIONS_PATH)
-    update_landing_page_sections_trending_packs(landing_page_sections, bq_client)
+    trending_packs = get_trending_packs(bq_client)
 
     if storage_base_path:
         GCPConfig.STORAGE_BASE_PATH = storage_base_path
@@ -1012,7 +1012,8 @@ def main():
                                            build_number=build_number, commit_hash=current_commit_hash,
                                            packs_statistic_df=packs_statistic_df,
                                            pack_was_modified=pack_was_modified,
-                                           landing_page_sections=landing_page_sections)
+                                           landing_page_sections=landing_page_sections,
+                                           trending_packs=trending_packs)
         if not task_status:
             pack.status = PackStatus.FAILED_METADATA_PARSING.name
             pack.cleanup()
