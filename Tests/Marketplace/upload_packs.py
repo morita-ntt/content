@@ -14,7 +14,8 @@ from typing import Any, Tuple, Union
 from Tests.Marketplace.marketplace_services import init_storage_client, init_bigquery_client, Pack, PackStatus, \
     GCPConfig, PACKS_FULL_PATH, IGNORED_FILES, PACKS_FOLDER, IGNORED_PATHS, Metadata, CONTENT_ROOT_PATH, \
     LANDING_PAGE_SECTIONS_PATH, get_packs_statistics_dataframe, BucketUploadFlow, load_json, get_content_git_client, \
-    get_recent_commits_data, store_successful_and_failed_packs_in_ci_artifacts
+    get_recent_commits_data, store_successful_and_failed_packs_in_ci_artifacts, \
+    update_landing_page_sections_trending_packs
 from demisto_sdk.commands.common.tools import run_command, str2bool
 
 from Tests.scripts.utils.log_util import install_logging
@@ -922,11 +923,16 @@ def main():
     private_bucket_name = option.private_bucket_name
     circle_branch = option.circle_branch
     force_upload = option.force_upload
-    landing_page_sections = load_json(LANDING_PAGE_SECTIONS_PATH)
 
     # google cloud storage client initialized
     storage_client = init_storage_client(service_account)
     storage_bucket = storage_client.bucket(storage_bucket_name)
+
+    # google cloud bigquery client initialized
+    bq_client = init_bigquery_client(service_account)
+
+    landing_page_sections = load_json(LANDING_PAGE_SECTIONS_PATH)
+    update_landing_page_sections_trending_packs(landing_page_sections, bq_client)
 
     if storage_base_path:
         GCPConfig.STORAGE_BASE_PATH = storage_base_path
@@ -961,7 +967,6 @@ def main():
                                   storage_bucket, is_private_content_updated)
 
     # google cloud bigquery client initialized
-    bq_client = init_bigquery_client(service_account)
     packs_statistic_df = get_packs_statistics_dataframe(bq_client)
 
     # clean index and gcs from non existing or invalid packs

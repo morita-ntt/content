@@ -4,6 +4,8 @@ import stat
 import subprocess
 import fnmatch
 import re
+from pprint import pformat
+
 import git
 import sys
 import shutil
@@ -2409,6 +2411,25 @@ def get_packs_statistics_dataframe(bq_client):
     packs_statistic_table.set_index('pack_name', inplace=True)
 
     return packs_statistic_table
+
+
+def update_landing_page_sections_trending_packs(landing_page_sections: dict, bq_client):
+    """
+    Updates the landing page sections data with Trending packs.
+    Trending packs: top 20 downloaded packs in the last 14 days.
+    Args:
+        landing_page_sections: The content of the landing page sections.
+        bq_client (google.cloud.bigquery.client.Client): The bigquery client with proper permissions to execute the query.
+    """
+    sections = landing_page_sections.get('sections', [])
+    if 'Trending' not in sections:
+        sections.append('Trending')
+    query = f"SELECT pack_name FROM `{GCPConfig.DOWNLOADS_TABLE}` ORDER BY num_count DESC LIMIT 20"
+    packs_with_highest_download_count_dataframe = bq_client.query(query).result().to_dataframe()
+    packs_with_highest_download_count = [pack_array[0] for pack_array in
+                                         packs_with_highest_download_count_dataframe.to_numpy()]
+    logging.debug(f'Found the following trending packs {pformat(packs_with_highest_download_count)}')
+    landing_page_sections['Trending'] = packs_with_highest_download_count
 
 
 def input_to_list(input_data, capitalize_input=False):
