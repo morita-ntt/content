@@ -1,1 +1,0 @@
-Note: Support for this pack moved to the partner on April 22nd 2021. Please contact the partner directly via the support link on the right.
